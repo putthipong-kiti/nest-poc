@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
+    ports:
+      - '5432:5432'
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+
+  api-typeorm:
+    build:
+      context: ./backend-typeorm
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASS=password
+      - DB_NAME=mydb
+    ports:
+      - '3001:3001'
+  
+  api-sequelize:
+    build:
+      context: ./backend-sequelize
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASS=password
+      - DB_NAME=mydb
+    ports:
+      - '3002:3001'
+
+  web:
+    build:
+      context: ./frontend
+    ports:
+      - '3000:3000'
+
+volumes:
+  dbdata:
