@@ -1,28 +1,21 @@
 import axios from 'axios';
 
-// Create separate clients for each API endpoint
 const ormApiClient = axios.create({
-  baseURL: 'http://localhost:3001',
-  timeout: 5000, // 5 second timeout
-  headers: {
-    'Content-Type': 'application/json',
-  }
+  baseURL: process.env.REACT_APP_ORM_API_URL,
+  timeout: 5000,
+  headers: { 'Content-Type': 'application/json' },
 });
 
 const sequelizeApiClient = axios.create({
-  baseURL: 'http://localhost:3002',
+  baseURL: process.env.REACT_APP_SEQUELIZE_API_URL,
   timeout: 5000,
-  headers: {
-    'Content-Type': 'application/json',
-  }
+  headers: { 'Content-Type': 'application/json' },
 });
 
 const prismaApiClient = axios.create({
-  baseURL: 'http://localhost:3003',
+  baseURL: process.env.REACT_APP_PRISMA_API_URL,
   timeout: 5000,
-  headers: {
-    'Content-Type': 'application/json',
-  }
+  headers: { 'Content-Type': 'application/json' },
 });
 
 // Request interceptor for ORM API - runs before every request
