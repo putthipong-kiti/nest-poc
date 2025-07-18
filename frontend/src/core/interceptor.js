@@ -1,4 +1,3 @@
-// api/clients.js
 import axios from 'axios';
 
 // Create separate clients for each API endpoint
@@ -12,6 +11,14 @@ const ormApiClient = axios.create({
 
 const sequelizeApiClient = axios.create({
   baseURL: 'http://localhost:3002',
+  timeout: 5000,
+  headers: {
+    'Content-Type': 'application/json',
+  }
+});
+
+const prismaApiClient = axios.create({
+  baseURL: 'http://localhost:3003',
   timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
@@ -85,4 +92,33 @@ sequelizeApiClient.interceptors.response.use(
   }
 );
 
-export { ormApiClient, sequelizeApiClient };
+prismaApiClient.interceptors.request.use(
+  (config) => {
+    console.log(`[Prisma API] Making request to ${config.url} at ${new Date().toISOString()}`);
+    return config;
+  },
+  (error) => {
+    console.error('[Prisma API] Request error:', error);
+    return Promise.reject(error);
+  }
+);
+
+prismaApiClient.interceptors.response.use(
+  (response) => {
+    console.log(`[Prisma API] Received response from ${response.config.url}:`, response.data);
+    return response;
+  },
+  (error) => {
+    console.error('[Prisma API] Response error:', error.message);
+    
+    if (error.code === 'ECONNREFUSED') {
+      console.error('[Prisma API] Server appears to be down');
+    } else if (error.response?.status === 404) {
+      console.error('[Prisma API] Endpoint not found');
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
+export { ormApiClient, sequelizeApiClient, prismaApiClient };

@@ -1,19 +1,25 @@
-// hooks/useUserData.js
 import { useEffect, useState } from 'react';
-import { ormApiClient, sequelizeApiClient } from '../api/clients';
+import { ormApiClient, sequelizeApiClient, prismaApiClient } from '../core/interceptor';
 
 export const useUserData = () => {
-  // State for ORM data
-  const [ormData, setOrmData] = useState([]);
+  const [ormData, setOrmData] = useState({
+    name: '',
+    loading: true,
+    error: null
+  });
   
-  // State for Sequelize data
   const [sequelizeData, setSequelizeData] = useState({
     name: '',
     loading: true,
     error: null
   });
 
-  // Function to fetch ORM data
+  const [prismaData, setPrismaData] = useState({
+    name: '',
+    loading: true,
+    error: null
+  });
+
   const fetchOrmData = async () => {
     try {
       setOrmData(prev => ({ ...prev, loading: true, error: null }));
@@ -34,7 +40,6 @@ export const useUserData = () => {
         });
       }
     } catch (error) {
-      // The interceptor has already logged the error
       setOrmData({
         name: '',
         loading: false,
@@ -45,7 +50,6 @@ export const useUserData = () => {
     }
   };
 
-  // Function to fetch Sequelize data
   const fetchSequelizeData = async () => {
     try {
       setSequelizeData(prev => ({ ...prev, loading: true, error: null }));
@@ -76,16 +80,48 @@ export const useUserData = () => {
     }
   };
 
+  const fetchPrismaData = async () => {
+    try {
+      setPrismaData(prev => ({ ...prev, loading: true, error: null }));
+      
+      const response = await prismaApiClient.get('/users');
+      
+      if (response.data && response.data.length > 0) {
+        setPrismaData({
+          name: response.data[0].name,
+          loading: false,
+          error: null
+        });
+      } else {
+        setPrismaData({
+          name: '',
+          loading: false,
+          error: 'No users found'
+        });
+      }
+    } catch (error) {
+      setPrismaData({
+        name: '',
+        loading: false,
+        error: error.code === 'ECONNREFUSED' 
+          ? 'Prisma server is not available' 
+          : 'Failed to fetch Prisma data'
+      });
+    }
+  };
+
   useEffect(() => {
-    // Fetch data from both APIs when the hook is first used
     fetchOrmData();
     fetchSequelizeData();
+    fetchPrismaData();
   }, []);
 
   return {
     ormData,
     sequelizeData,
+    prismaData,
     refetchOrmData: fetchOrmData,
-    refetchSequelizeData: fetchSequelizeData
+    refetchSequelizeData: fetchSequelizeData,
+    refetchPrismaData: fetchPrismaData
   };
 };

@@ -6,7 +6,7 @@ import { User } from './user.model';
 export class UsersService {
   constructor(
     @InjectModel(User)
-    private userModel: typeof User,
+    private readonly userModel: typeof User,
   ) {}
   
   findAll(): Promise<User[]> {

@@ -1,15 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { UsersService } from './users/users.service';
+import { UserService } from './user/user.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors();
   
-  const usersService = app.get(UsersService);
-  await usersService.seed();
+  const userService = app.get(UserService);
+  await userService.seed();
 
-  await app.listen(3002);
+  await app.listen(3003);
 }
 bootstrap();
